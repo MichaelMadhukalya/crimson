@@ -1,12 +1,14 @@
 # Crimson
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![Java CI with Maven](https://github.com/MichaelMadhukalya/crimson/workflows/Java%20CI%20with%20Maven/badge.svg)
+
 ## Introduction
-**Crimson** is a simple, fast, light-weight, extensible JSON parser written in Java from scratch. It provides full **interface** compatibility with standard Java JSON APIs. Crimson interops fully with standard Java data structures such as: *List*, *Map*, *String* etc. It uses *UTF-8* as the default encoding scheme while serializing raw bytes to persistent storage on disk.
+**Crimson** is a simple, fast, light weight, extensible JSON parser written in Java from scratch. It provides full **interface** compatibility with standard Java JSON APIs. Crimson interops fully with standard Java data structures such as: *List*, *Map*, *String* etc. It uses *UTF-8* as the default encoding scheme while serializing raw bytes to persistent storage on disk.
 
 ## Design
-Crimson uses a **recursive descent** strategy to parse inputs produced by lexical analyzer. A syntax checker validates input tokens in first pass looking for obvious issues such as: incorrect parenthesis match etc. On the other hand, semantic verification guards against issues such as key names not being in proper format e.g. *"key1"* as opposed to being *2E-05* or *null*. Finally, a recursive descent parser de-serializes input into one of the 7 data types supported in Crimson. We discuss more about the hierarchy of data types in the next section. 
+Crimson uses a **recursive descent** strategy to parse inputs produced by lexical analyzer. A syntax checker validates input tokens in first pass looking for obvious issues such as: incorrect parenthesis match etc. On the other hand, semantic verification guards against issues such as key names not being in proper format e.g. *"key1"* as opposed to being *2E-05* or *null*. Finally, a recursive descent parser de-serializes input into one of the 7 data types supported by Crimson. Please see below for a discussion about the hierarchy of data types used in Crimson. 
 
 ## Data Type
-The following table lists the 7 data types used in Crimson.
+The following table lists the **7** data types used in Crimson.
 
 Name | Description
 -----| -----------
@@ -19,20 +21,23 @@ Name | Description
 **JsonObject** | Concrete type for representing a map (key-value pair). Internal deserialized representation is a Map.
 
 #### Why JsonType?
-This idea originates from **Item 29**, *Chapter 5: Generics* of **Effective Java** (2/e). An abstract super type can be used to safely create type safe heterogenous containers where rather than parameterizing the entire container on a single key type individual rows/entries can be paramterized separetely. This is of particular importance in the **big data** world where often the same container is used to keep entries from different columns all of which may have separate types. Using Crimson we can create a type safe container as follows:
+This idea originates from **Item 29**, *Chapter 5: Generics* of **Effective Java** (2/e). An abstract super type can be used to safely create type safe a heterogenous container where rather than parameterizing the entire container on a single key type individual rows/entries can be parameterized separately. This is of importance in the **big data** world where often the same container is used to keep entries from different columns all of which may have separate types. Using Crimson we can create a type safe container as follows:
+
+First, we declare a map with its key being of type ```JsonType``` and value being of type ```Object```.
 
 ```java
 Map<JsonType<?>, Object> typeSafeMap = new HashMap<>();
 ```
 
-Now, we de-serialize an input into a JsonObject where the values corresponding to the three keys viz. "key1", "key2", and "key3" represent a JsonString, JsonArray and JsonObject as follows: 
+Next, we de-serialize an input into a JsonObject where the values corresponding to the three keys viz. "key1", "key2", and "key3" represent a ```JsonString```, ```JsonArray``` and ```JsonObject``` as follows: 
 
 ```java
 String input = "{ \"key1\": \"test\", \"key2\": [1, 2, 3], \"key3\": {\"key4\": \"value4\"} }";
 JsonObject jsonObject = JsonObject.newInstance();
 jsonObject.cast(input);
 ```
-Three insert operations into the type safe container addition followed by an assertion check indicates that three objects were indeed added to the container.
+
+Finally, we insert the three items via type safe put operations into the container. An assertion check indicates that three objects were added to the container.
 
 ```java
 JsonType<?> stringType = (JsonType<?>) jsonObject.get("key1");
@@ -61,25 +66,44 @@ void typeSafePut(Map<JsonType<?>, Object> typeSafeMap, JsonType<?> type, Object 
         throw e;
     }
 }
+```
 
-Object typeSafeGet(Map<JsonType<?>, Object> typeSafeMap, JsonType<?> type) {
-    return typeSafeMap.get(type);
+Similarly, insertion fails when there is a type mismatch as shown below. 
+
+```java
+@Test(expected = JsonType.UnCastableObjectToInstanceTypeException.class)
+public void typeSafeMapFail_Test() {
+    ...
+    ...
+    JsonType<?> arrayType = (JsonType<?>) jsonObject.get("key2");
+    if (arrayType instanceof JsonArray) {
+        typeSafePut(typeSafeMap, JsonObject.newInstance(), arrayType.valueOf());
+    }
+
+    JsonType<?> objectType = (JsonType<?>) jsonObject.get("key3");
+    if (objectType instanceof JsonObject) {
+        typeSafePut(typeSafeMap, JsonArray.newInstance(), objectType.valueOf());
+    }
 }
 ```
 
-In addition, using JsonType provides two additonal benefits:
+The full test case can be found here:
+https://github.com/MichaelMadhukalya/crimson/blob/master/src/test/java/com/crimson/types/TypeSafeMapTest.java#L11
 
-* ```JsonType``` is parameterized by a type parameter which is bounded by a subtype of its own type. This provides some additional compile time type safety by preventing arbitrary parameterization of ```JsonType``` instances. Please see the link below for full class declaration of ```JsonType``` class.
+Furthermore, using ```JsonType``` provides two additional benefits:
 
-```
+* ```JsonType``` is parameterized by a type parameter which is bounded by a subtype of its own type. This provides some additional compile time type safety by preventing arbitrary parameterization of ```JsonType``` instances. 
+
+```java
 public abstract class JsonType<T extends JsonType> implements JsonValue {
 ...
 }
 ```
 
-* Second, ```valueOf()``` method provides **back door** that enables access to the actual object instance/reference associated with ```JsonType``` object. This semantics can be exploited to obtain a shallow copy of a valid ```JsonType``` object parsed from input e.g. ```JsonString```, ```JsonNumber```, ```JsonArray``` or ```JsonObject```.
+* Second, ```valueOf()``` method provides **back door** that enables access to the actual object instance/reference associated with ```JsonType```. This semantic can be exploited to obtain a shallow copy of a valid ```JsonType``` object parsed from input e.g. ```JsonString```, ```JsonNumber```, ```JsonArray``` or ```JsonObject```.
 
-Full class declaration of ```JsonType``` can be found here: 
+Please see the link below for full class declaration of ```JsonType```:
+https://github.com/MichaelMadhukalya/crimson/blob/master/src/main/java/com/crimson/types/JsonType.java#L5
 
 ## Implementation 
 In addition to the 7 primary data types Crimson also has a few utility classes that are currently under development. 
@@ -128,7 +152,7 @@ Tests run: 84, Failures: 0, Errors: 0, Skipped: 0
 ```
 
 ## How to build?
-Crimson can be built as a standard Java Maven project. Please ensure that you have Maven installed on your machine and both ```JAVA_HOME``` and ```MAVEN_HOME``` environment variables are set correctly. 
+Crimson can be built as a standard Java project using Maven. Please ensure that you have Maven installed on your machine and both ```JAVA_HOME``` and ```MAVEN_HOME``` environment variables are set correctly. 
 
 From inside the project directory run the following commands in order:
 ```
@@ -138,6 +162,7 @@ mvn test
 mvn package
 mvn install
 ```
+
 This shdould create a ```target``` folder inside the project directory where you will find the project jar.
 
 ## Future work
@@ -145,4 +170,4 @@ As part of future work the following tasks are tentatively planned:
 
 - [ ] Add support for parallel processing
 - [ ] Add support for serializing Json data types onto disk using different compression formats e.g. ```GZIP```, ```LZ4```, ```snappy``` etc.
-- [ ] Add support for an additional Json data type ```JsonBinary``` capable of parsing binary data serialzied in some format e.g. ```Base-64```. This will require some foundational work at the lexical parser level.
+- [ ] Add support for an additional Json data type ```JsonBinary``` capable of parsing binary data serialized in some format e.g. ```Base-64```. This will require some foundational work at the lexical parser level.
