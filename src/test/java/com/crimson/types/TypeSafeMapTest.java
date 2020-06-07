@@ -18,7 +18,7 @@ public class TypeSafeMapTest {
     }
 
     @Test
-    public void typeSafeMapTest() {
+    public void typeSafeMap_Test() {
         String input = "{ \"key1\": \"test\", \"key2\": [1, 2, 3], \"key3\": {\"key4\": \"value4\"} }";
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(input);
@@ -54,4 +54,29 @@ public class TypeSafeMapTest {
     Object typeSafeGet(Map<JsonType<?>, Object> typeSafeMap, JsonType<?> type) {
         return typeSafeMap.get(type);
     }
+
+    @Test(expected = JsonType.UnCastableObjectToInstanceTypeException.class)
+    public void typeSafeMapFail_Test() {
+        String input = "{ \"key1\": \"test\", \"key2\": [1, 2, 3], \"key3\": {\"key4\": \"value4\"} }";
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(input);
+
+        Map<JsonType<?>, Object> typeSafeMap = new HashMap<>();
+
+        JsonType<?> stringType = (JsonType<?>) jsonObject.get("key1");
+        if (stringType instanceof JsonString) {
+            typeSafePut(typeSafeMap, JsonString.newInstance(), stringType.valueOf());
+        }
+
+        JsonType<?> arrayType = (JsonType<?>) jsonObject.get("key2");
+        if (arrayType instanceof JsonArray) {
+            typeSafePut(typeSafeMap, JsonObject.newInstance(), arrayType.valueOf());
+        }
+
+        JsonType<?> objectType = (JsonType<?>) jsonObject.get("key3");
+        if (objectType instanceof JsonObject) {
+            typeSafePut(typeSafeMap, JsonArray.newInstance(), objectType.valueOf());
+        }
+    }
+
 }
