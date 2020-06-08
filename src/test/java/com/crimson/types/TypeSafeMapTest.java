@@ -18,7 +18,7 @@ public class TypeSafeMapTest {
     }
 
     @Test
-    public void typeSafeMap_Test() {
+    public void typeSafeMapChecker_Test() {
         String input = "{ \"key1\": \"test\", \"key2\": [1, 2, 3], \"key3\": {\"key4\": \"value4\"} }";
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(input);
@@ -55,7 +55,7 @@ public class TypeSafeMapTest {
         return typeSafeMap.get(type);
     }
 
-    @Test(expected = JsonType.UnCastableObjectToInstanceTypeException.class)
+    @Test(expected = Exception.class)
     public void typeSafeMapFail_Test() {
         String input = "{ \"key1\": \"test\", \"key2\": [1, 2, 3], \"key3\": {\"key4\": \"value4\"} }";
         JsonObject jsonObject = JsonObject.newInstance();
