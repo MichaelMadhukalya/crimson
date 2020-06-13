@@ -17,14 +17,15 @@ class JParser implements JsonParser, Closeable {
     /**
      * Cache of JParser instance by thread
      */
-    static final Map<String, JParser> cache = new HashMap<>();
+    private static volatile Map<String, JParser> cache = new HashMap<>();
     private final Logger logger = Logger.getLogger(getClass());
     private final Stack<Event> events = new Stack<>();
     /**
-     * Mutable state of the parser
+     * State of the parser
      */
-    private JsonParser jsonParser;
-    private String input;
+    private final JsonParser jsonParser;
+    private final String input;
+    private final String name;
 
     private JParser() {
         this(null);
@@ -32,10 +33,10 @@ class JParser implements JsonParser, Closeable {
 
     private JParser(String input) {
         if (!validate(input)) {
-            throw new IllegalArgumentException(
-                    String.format("Input JSON string {%s} has either unbalanced or out of order parenthesis", input));
+            throw new IllegalArgumentException(String.format("JSON input {%s} is not valid or formatted correct",input));
         }
 
+        this.name = Thread.currentThread().getName();
         this.input = input;
         this.jsonParser = Json.createParser(new StringReader(this.input));
     }
@@ -46,7 +47,11 @@ class JParser implements JsonParser, Closeable {
             return cache.get(name);
         }
 
-        cache.put(name, new JParser(input));
+        synchronized (JParser.class) {
+            if(!cache.containsKey(name)) {
+                cache.put(name, new JParser(input));
+            }
+        }
         return cache.get(name);
     }
 
@@ -113,10 +118,9 @@ class JParser implements JsonParser, Closeable {
 
     public void pushBack(Event event) {
         if (checkAccess()) {
-            String name = Thread.currentThread().getName();
-            logger.warn(String.format("Thread {%s} does not have parser registered or not authorized for this instance", name));
-            throw new IllegalStateException(String.format(
-                    "Thread {%s} does not have parser registered or not authorized for this instance", name));
+            String currentThreadName = Thread.currentThread().getName();
+            logger.warn(String.format("Thread {%s} does not have parser registered or not authorized for this instance", currentThreadName));
+            throw new IllegalStateException(String.format("Thread {%s} does not have parser registered or not authorized for this instance", currentThreadName));
         }
 
         events.push(event);
@@ -125,29 +129,30 @@ class JParser implements JsonParser, Closeable {
     @Override
     public void close() {
         if (checkAccess()) {
-            String name = Thread.currentThread().getName();
-            logger.warn(String.format("Thread {%s} does not have parser registered or not authorized for this instance", name));
-            throw new IllegalStateException(String.format(
-                    "Thread {%s} does not have parser registered or not authorized for this instance", name));
+            String currentThreadName = Thread.currentThread().getName();
+            logger.warn(String.format("Thread {%s} does not have parser registered or not authorized for this instance", currentThreadName));
+            throw new IllegalStateException(String.format("Thread {%s} does not have parser registered or not authorized for this instance", currentThreadName));
         }
 
         if (null != jsonParser) {
             jsonParser.close();
-            jsonParser = null;
-            input = null;
-            String name = Thread.currentThread().getName();
-            cache.remove(name);
+            synchronized (JParser.class) {
+                cache.remove(name);
+            }
         }
 
         logger.debug(String.format("Removed JParser instance for thread: {%s}", Thread.currentThread().getName()));
     }
 
     public boolean checkAccess() {
+        if(!name.equals(Thread.currentThread().getName())) {
+            return false;
+        }
         return isClose();
     }
 
     public boolean isClose() {
-        return !cache.containsKey(Thread.currentThread().getName()) || null == cache.get(Thread.currentThread().getName());
+        return !cache.containsKey(name) || null == cache.get(name);
     }
 
     /**
