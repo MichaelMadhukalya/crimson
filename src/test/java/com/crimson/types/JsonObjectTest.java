@@ -90,7 +90,7 @@ public class JsonObjectTest {
         Assert.assertTrue(null != jsonObject.map && jsonObject.size() == 1);
     }
 
-    //@Test
+    @Test
     public void multipleKeyAsInput_Test() {
         JsonObject jsonObject = JsonObject.newInstance();
         jsonObject.cast(INPUT_2);
