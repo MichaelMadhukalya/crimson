@@ -174,7 +174,7 @@ As part of future work the following tasks are tentatively planned:
 - [ ] Add support for schema/shape inference based on provided input
 - [ ] Add support for serializing Json data types onto disk using different compression formats e.g. ```GZIP```, ```LZ4```, ```snappy``` etc.
 - [ ] Add support for an additional Json data type ```JsonBinary``` capable of parsing binary data serialized in some format e.g. ```Base-64```. This will require some foundational work at the lexical parser level.
-- [ ] Add support that allows interop/conversion between User Defined Types (UDT)/Standard types and the **7** data types natively supported by Crimson parser via interface such as the one below:
+- [ ] Add support that allows interop/conversion between User Defined Types (UDT)/Standard types and the **7** data types natively supported by Crimson via interface such as the one below:
 ```
-public <T> T parse(Class<T> klass, Object value)
+<T> public T parse(Class<T> UDT, Object value)
 ```
