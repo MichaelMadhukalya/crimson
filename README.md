@@ -2,7 +2,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![Java CI with Maven](https://github.com/MichaelMadhukalya/crimson/workflows/Java%20CI%20with%20Maven/badge.svg)
 
 ## Introduction
-**Crimson** is a simple, fast, light weight, thread safe, extensible JSON parser written in Java from scratch. It provides full **interface** compatibility with standard Java JSON APIs. Crimson interops fully with standard Java data structures such as: *List*, *Map*, *String* etc. It uses *UTF-8* as the default encoding scheme while serializing raw bytes to persistent storage on disk.
+**Crimson** is a simple, fast, light weight, thread safe, extensible JSON parser written in Java. It provides full **interface** compatibility with standard Java JSON APIs. Crimson interops fully with standard Java data structures such as: *List*, *Map*, *String* etc. It uses *UTF-8* as the default encoding scheme while serializing raw bytes to persistent storage on disk.
 
 ## Design
 Crimson uses a **recursive descent** strategy to parse inputs produced by lexical analyzer. A syntax checker validates input tokens in first pass looking for obvious issues such as: incorrect parenthesis match etc. On the other hand, semantic verification guards against issues such as key names not being in proper format e.g. *"key1"* as opposed to being *2E-05* or *null*. Finally, a recursive descent parser de-serializes input into one of the **7** data types supported by Crimson. Please see below for a discussion about the hierarchy of data types used in Crimson. 
@@ -119,7 +119,7 @@ https://github.com/MichaelMadhukalya/crimson/tree/master/src/main/java/com/crims
 
 ## Testing
 Crimson has a suite of 87 unit/functional tests. 
-Link: 
+Link: https://github.com/MichaelMadhukalya/crimson/tree/master/src/test/java/com/crimson/types
 
 ```
 -------------------------------------------------------
@@ -150,12 +150,12 @@ Tests run: 87, Failures: 0, Errors: 0, Skipped: 0
 ```
 
 ## Parallel Processing
-Crimson is *thread safe* and allows parallel/concurrent parsing of multiple inputs via a *Fork-Join* or custom *Worker* thread pool. 
+Crimson is *thread safe* and allows parallel processing of inputs via a *Fork-Join* or custom *Worker* thread pool. Link to a few test cases demonstrating parallel processing of Json inputs can be found below: 
 https://github.com/MichaelMadhukalya/crimson/blob/master/src/test/java/com/crimson/types/JParserTest.java#L53
 https://github.com/MichaelMadhukalya/crimson/blob/master/src/test/java/com/crimson/types/JParserTest.java#L69
 
 ## How to build?
-Crimson can be built as a standard Java project using Maven. Please ensure that you have Maven installed on your machine and both ```JAVA_HOME``` and ```MAVEN_HOME``` environment variables are set correctly. 
+Crimson can be built as a standard Java project using Maven. Please ensure that Maven is installed on your machine and both ```JAVA_HOME``` and ```MAVEN_HOME``` environment variables are set correctly. 
 
 From inside the project directory run the following commands in order:
 ```
@@ -171,9 +171,9 @@ This will create a ```target``` folder inside the project directory where you wi
 ## Future work
 As part of future work the following tasks are tentatively planned:
 
-- [ ] Add support for schema/shape inference based on provided input
-- [ ] Add support for serializing Json data types onto disk using different compression formats e.g. ```GZIP```, ```LZ4```, ```snappy``` etc.
-- [ ] Add support for an additional Json data type ```JsonBinary``` capable of parsing binary data serialized in some format e.g. ```Base-64```. This will require some foundational work at the lexical parser level.
+- [ ] Add support for schema/shape inference
+- [ ] Add support for serializing data types onto disk using different compression formats e.g. ```GZIP```, ```LZ4```, ```snappy``` etc.
+- [ ] Add support for a new Json data type ```JsonBinary``` capable of parsing binary data serialized in some format e.g. ```Base-64```. This will require some work at the lexical parser level.
 - [ ] Add support that allows interop/conversion between User Defined Types (UDT)/Standard types and the **7** data types natively supported by Crimson via interface such as the one below:
 ```
 <T> public T parse(Class<T> UDT, Object value)
