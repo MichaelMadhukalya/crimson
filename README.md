@@ -2,10 +2,10 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![Java CI with Maven](https://github.com/MichaelMadhukalya/crimson/workflows/Java%20CI%20with%20Maven/badge.svg)
 
 ## Introduction
-**Crimson** is a simple, fast, light weight, extensible JSON parser written in Java from scratch. It provides full **interface** compatibility with standard Java JSON APIs. Crimson interops fully with standard Java data structures such as: *List*, *Map*, *String* etc. It uses *UTF-8* as the default encoding scheme while serializing raw bytes to persistent storage on disk.
+**Crimson** is a simple, fast, light weight, thread safe, extensible JSON parser written in Java from scratch. It provides full **interface** compatibility with standard Java JSON APIs. Crimson interops fully with standard Java data structures such as: *List*, *Map*, *String* etc. It uses *UTF-8* as the default encoding scheme while serializing raw bytes to persistent storage on disk.
 
 ## Design
-Crimson uses a **recursive descent** strategy to parse inputs produced by lexical analyzer. A syntax checker validates input tokens in first pass looking for obvious issues such as: incorrect parenthesis match etc. On the other hand, semantic verification guards against issues such as key names not being in proper format e.g. *"key1"* as opposed to being *2E-05* or *null*. Finally, a recursive descent parser de-serializes input into one of the 7 data types supported by Crimson. Please see below for a discussion about the hierarchy of data types used in Crimson. 
+Crimson uses a **recursive descent** strategy to parse inputs produced by lexical analyzer. A syntax checker validates input tokens in first pass looking for obvious issues such as: incorrect parenthesis match etc. On the other hand, semantic verification guards against issues such as key names not being in proper format e.g. *"key1"* as opposed to being *2E-05* or *null*. Finally, a recursive descent parser de-serializes input into one of the **7** data types supported by Crimson. Please see below for a discussion about the hierarchy of data types used in Crimson. 
 
 ## Data Type
 The following table lists the **7** data types used in Crimson.
@@ -90,9 +90,9 @@ public void typeSafeMapFail_Test() {
 The full test case can be found here:
 https://github.com/MichaelMadhukalya/crimson/blob/master/src/test/java/com/crimson/types/TypeSafeMapTest.java#L11
 
-Furthermore, using ```JsonType``` provides two additional benefits:
+```JsonType``` provides two additional benefits:
 
-* ```JsonType``` is parameterized by a type parameter which is bounded by a subtype of its own type. This provides some additional compile time type safety by preventing arbitrary parameterization of ```JsonType``` instances. 
+* ```JsonType``` is parameterized by a type parameter which is bounded by a subtype of its own type. This provides additional compile time type safety by preventing arbitrary parameterization of ```JsonType``` instances. 
 
 ```java
 public abstract class JsonType<T extends JsonType> implements JsonValue {
@@ -100,56 +100,59 @@ public abstract class JsonType<T extends JsonType> implements JsonValue {
 }
 ```
 
-* Second, ```valueOf()``` method provides **back door** that enables access to the actual object instance/reference associated with ```JsonType```. This semantic can be exploited to obtain a shallow copy of a valid ```JsonType``` object parsed from input e.g. ```JsonString```, ```JsonNumber```, ```JsonArray``` or ```JsonObject```.
+* Second, ```valueOf()``` method provides access to the actual object instance associated with ```JsonType```. This semantic can be exploited to obtain a shallow copy of a valid ```JsonType``` object parsed from input e.g. ```JsonString```, ```JsonNumber```, ```JsonArray``` or ```JsonObject```.
 
 Please see the link below for full class declaration of ```JsonType```:
 https://github.com/MichaelMadhukalya/crimson/blob/master/src/main/java/com/crimson/types/JsonType.java#L5
 
 ## Implementation 
-In addition to the 7 primary data types Crimson also has a few utility classes that are currently under development. 
+In addition to the **7** primary data types Crimson also has a few utility classes that are currently under development. 
 
 Name | Description
 -----| -----------
 **JParser** | Top level parser used for parsing input object
-**JsonMapper** | A utlity class that provides interop with Java standard data structures such as *List*, *Map* etc.
-**JsonWriter** | A utlity class for serializing Json data types into raw bytes as per provided encoding scheme.
+**JsonMapper** | Util that provides interop with Java standard data structures such as *List*, *Map* etc.
+**JsonWriter** | Util for serializing Json data types into raw bytes as per provided encoding scheme.
 
-A full link to Crimson source can be found here: 
+A full link to Crimson types can be found here:
+https://github.com/MichaelMadhukalya/crimson/tree/master/src/main/java/com/crimson/types
 
 ## Testing
-Crimson has a suite of 84 functional tests. 
+Crimson has a suite of 87 unit/functional tests. 
 Link: 
 
 ```
 -------------------------------------------------------
  T E S T S
 -------------------------------------------------------
-Running com.crimson.types.JParserTest
-log4j:WARN No appenders could be found for logger (com.crimson.types.JParser).
-log4j:WARN Please initialize the log4j system properly.
-log4j:WARN See http://logging.apache.org/log4j/1.2/faq.html#noconfig for more info.
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.168 sec
-Running com.crimson.types.JsonArrayTest
-Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 sec
 Running com.crimson.types.JsonBooleanTest
-Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 sec
-Running com.crimson.types.JsonMapperTest
-Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.013 sec
-Running com.crimson.types.JsonNullTest
-Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.125 sec
 Running com.crimson.types.JsonNumberTest
-Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.266 sec
+Running com.crimson.types.JsonArrayTest
+Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.044 sec
 Running com.crimson.types.JsonObjectTest
-Tests run: 53, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.096 sec
-Running com.crimson.types.JsonStringTest
-Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec
+Tests run: 53, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.17 sec
+Running com.crimson.types.JsonMapperTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.024 sec
 Running com.crimson.types.TypeSafeMapTest
-Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 sec
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 sec
+Running com.crimson.types.JParserTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.028 sec
+Running com.crimson.types.JsonNullTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 sec
+Running com.crimson.types.JsonStringTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 sec
 
 Results :
 
-Tests run: 84, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 87, Failures: 0, Errors: 0, Skipped: 0
 ```
+
+## Parallel Processing
+Crimson is *thread safe* and allows parallel/concurrent parsing of multiple inputs via a *Fork-Join* or custom *Worker* thread pool. 
+https://github.com/MichaelMadhukalya/crimson/blob/master/src/test/java/com/crimson/types/JParserTest.java#L53
+https://github.com/MichaelMadhukalya/crimson/blob/master/src/test/java/com/crimson/types/JParserTest.java#L69
 
 ## How to build?
 Crimson can be built as a standard Java project using Maven. Please ensure that you have Maven installed on your machine and both ```JAVA_HOME``` and ```MAVEN_HOME``` environment variables are set correctly. 
@@ -163,11 +166,15 @@ mvn package
 mvn install
 ```
 
-This shdould create a ```target``` folder inside the project directory where you will find the project jar.
+This will create a ```target``` folder inside the project directory where you will find the project jar.
 
 ## Future work
 As part of future work the following tasks are tentatively planned:
 
-- [ ] Add support for parallel processing
+- [ ] Add support for schema/shape inference based on provided input
 - [ ] Add support for serializing Json data types onto disk using different compression formats e.g. ```GZIP```, ```LZ4```, ```snappy``` etc.
 - [ ] Add support for an additional Json data type ```JsonBinary``` capable of parsing binary data serialized in some format e.g. ```Base-64```. This will require some foundational work at the lexical parser level.
+- [ ] Add support that allows interop/conversion between User Defined Types (UDT)/Standard types and the **7** data types natively supported by Crimson parser via interface such as the one below:
+```
+public <T> T parse(Class<T> klass, Object value)
+```
