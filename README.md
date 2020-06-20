@@ -178,3 +178,4 @@ As part of future work the following tasks are tentatively planned:
 ```
 <T> public T parse(Class<T> UDT, Object value)
 ```
+- [ ] Add support for storage/retrieval of Crimson data types in standard *Big Data* storage formats such as: AVRO, PARQUET, CSV etc.  
