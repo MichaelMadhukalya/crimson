@@ -1,6 +1,7 @@
 package com.crimson.types;
 
 import java.io.Closeable;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 
@@ -12,7 +13,7 @@ public interface IJsonWriter<T extends JsonType> extends Closeable {
    * @param object Input JsonType object
    * @param out output stream
    */
-  void write(JsonType<T> object, OutputStream out);
+  void write(JsonType<T> object, OutputStream out) throws IOException;
 
   /**
    * Write a JsonType object to an output stream in serialized format using the supplied encoding
@@ -22,7 +23,7 @@ public interface IJsonWriter<T extends JsonType> extends Closeable {
    * @param out output stream
    * @param charset Encoding scheme
    */
-  void write(JsonType<T> object, OutputStream out, Charset charset);
+  void write(JsonType<T> object, OutputStream out, Charset charset) throws IOException;
 
   /**
    * Write an array of JsonType object to an output stream in serialized format using the default
@@ -31,5 +32,5 @@ public interface IJsonWriter<T extends JsonType> extends Closeable {
    * @param objects Input array of JsonType objects
    * @param out output stream
    */
-  void write(JsonType<T>[] objects, OutputStream out);
+  void write(JsonType<T>[] objects, OutputStream out) throws IOException;
 }
