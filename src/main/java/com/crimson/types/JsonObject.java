@@ -14,7 +14,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonObject {
-
   JParser parser;
   Map<? super String, ? super JsonValue> map = new LinkedHashMap<>();
 

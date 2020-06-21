@@ -13,7 +13,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArray {
-
   JParser parser;
   List<? super JsonValue> list = new ArrayList<>();
 

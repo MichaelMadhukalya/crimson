@@ -1,7 +1,5 @@
 package com.crimson.types;
 
-import org.apache.log4j.Logger;
-
 import javax.json.Json;
 import javax.json.stream.JsonLocation;
 import javax.json.stream.JsonParser;
@@ -11,7 +9,6 @@ import java.math.BigDecimal;
 import java.util.Stack;
 
 class JParser implements JsonParser, Closeable {
-  private final Logger logger = Logger.getLogger(getClass());
   private final Stack<Event> events = new Stack<>();
 
   /** State of the parser */

@@ -1,7 +1,5 @@
 package com.crimson.types;
 
-import org.apache.log4j.Logger;
-
 import javax.json.JsonValue;
 import java.math.BigDecimal;
 import java.util.List;
@@ -9,9 +7,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class JsonMapper {
-  /** Logger */
-  private final Logger logger = Logger.getLogger(getClass().getSimpleName());
-
   public Map<Object, Object> toMap(JsonObject object) {
     return object.entrySet().stream()
         .collect(Collectors.toMap(e -> e.getKey(), e -> transform(e.getValue())));
