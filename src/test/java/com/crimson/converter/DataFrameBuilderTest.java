@@ -30,6 +30,6 @@ public class DataFrameBuilderTest {
   }
 
   private boolean checkFileExists() {
-    return new File("/tmp/sample-json.json").exists();
+    return new File("/tmp/data/sample-json.json").exists();
   }
 }
