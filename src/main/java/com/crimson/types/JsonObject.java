@@ -1,5 +1,6 @@
 package com.crimson.types;
 
+import com.crimson.annotations.ValueType;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.lang.ArrayUtils;
@@ -13,6 +14,7 @@ import javax.json.stream.JsonParser.Event;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@ValueType
 public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonObject {
   JParser parser;
   Map<? super String, ? super JsonValue> map = new LinkedHashMap<>();

@@ -2,7 +2,7 @@ package com.crimson.types;
 
 import javax.json.JsonValue;
 
-public abstract class JsonType<T extends JsonType> implements JsonValue {
+public abstract class JsonType<T extends JsonType> implements JsonValue, Cloneable {
   T value;
 
   JsonType() {}

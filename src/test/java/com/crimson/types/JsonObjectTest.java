@@ -203,7 +203,7 @@ public class JsonObjectTest {
   @Test(expected = IllegalArgumentException.class)
   public void nullObjectAsInput_Test() {
     JsonObject jsonObject = JsonObject.newInstance();
-    jsonObject.cast(null);
+    jsonObject.cast(new Object[]{null});
   }
 
   @Test(expected = UnCastableObjectToInstanceTypeException.class)
