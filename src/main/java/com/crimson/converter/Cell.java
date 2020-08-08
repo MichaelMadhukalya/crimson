@@ -6,21 +6,36 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 class Cell {
-  /** Name */
-  String name;
 
-  /** Type */
-  JsonType<?> jsonType;
+  /**
+   * Name
+   */
+  final String name;
 
-  /** Value */
-  Object value;
+  /**
+   * Type
+   */
+  final JsonType<?> jsonType;
 
-  Cell() {}
+  /**
+   * Value
+   */
+  final Object value;
+
+  private Cell() {
+    this("", null, null);
+  }
 
   Cell(String name, JsonType<?> jsonType, Object value) {
     this.name = name;
     this.jsonType = jsonType;
     this.value = value;
+  }
+
+  Cell(Cell cell) {
+    name = cell.name;
+    jsonType = cell.jsonType;
+    value = cell.value;
   }
 
   @Override

@@ -1,20 +1,21 @@
 package com.crimson.converter;
 
+import com.crimson.types.JsonNull;
 import com.crimson.types.JsonType;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-class DataFrame {
+public class DataFrame {
 
   /**
    * Containers for DataFrame
    */
   final Map<String, List<Cell>> frame = new LinkedHashMap<>();
-  final Set<String> keys = new LinkedHashSet<>();
+  final Set<String> keys = new HashSet<>();
 
   /**
    * Max cols and rows for DataFrame
@@ -27,10 +28,25 @@ class DataFrame {
    */
   int rowCounter = 0, colCounter = 0;
 
+  /**
+   * Separators
+   */
+  static final String COLUMN_SEPARATOR = ",";
+  static final String ROW_SEPARATOR = "\n";
+
   DataFrame() {
   }
 
+  private DataFrame(DataFrame dataFrame) {
+    dataFrame.frame.entrySet().stream().forEach(e -> frame.put(e.getKey(), new ArrayList<>()));
+    dataFrame.keys.stream().forEach(e -> keys.add(e));
+  }
+
   public <T extends JsonType> void addHeader(List<Cell> header) {
+    if (initialized()) {
+      return;
+    }
+
     header.stream()
         .forEach(
             e -> {
@@ -38,8 +54,7 @@ class DataFrame {
               keys.add(e.name);
               ++colCounter;
               if (colCounter >= MAX_NUMBER_COLS) {
-                throw new IllegalStateException(
-                    String.format("DataFrame exceeded max. column size : %d", colCounter));
+                throw new IllegalStateException(String.format("DataFrame exceeded max. column size : %d", colCounter));
               }
             });
   }
@@ -52,8 +67,7 @@ class DataFrame {
               curr.add(e);
               ++rowCounter;
               if (rowCounter >= MAX_NUMBER_ROWS) {
-                throw new IllegalStateException(
-                    String.format("DataFrame exceeded max. row size : %d", rowCounter));
+                throw new IllegalStateException(String.format("DataFrame exceeded max. row size : %d", rowCounter));
               }
             });
 
@@ -61,7 +75,9 @@ class DataFrame {
         .forEach(
             e -> {
               if (e.size() < rowCounter) {
-                e.add(null);
+                JsonType<?> jsonType = JsonNull.newInstance();
+                Object value = jsonType.toString();
+                e.add(new Cell("", jsonType, value));
               }
             });
   }
@@ -72,5 +88,21 @@ class DataFrame {
 
   public boolean initialized() {
     return frame.size() == keys.size() && keys.size() > 0;
+  }
+
+  @Override
+  public String toString() {
+    StringBuffer buffer = new StringBuffer();
+
+    frame.keySet().stream().forEach(e -> buffer.append(e).append(COLUMN_SEPARATOR));
+    buffer.append(ROW_SEPARATOR);
+
+    for (int i = 0; i < rowCounter; i++) {
+      final int idx = i;
+      frame.values().stream().forEach(e -> buffer.append(e.get(idx)).append(COLUMN_SEPARATOR));
+      buffer.append(ROW_SEPARATOR);
+    }
+
+    return buffer.toString();
   }
 }

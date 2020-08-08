@@ -1,11 +1,14 @@
 package com.crimson.converter;
 
-import com.crimson.types.*;
-import org.apache.commons.lang3.StringUtils;
-
+import com.crimson.types.JsonArray;
+import com.crimson.types.JsonBoolean;
+import com.crimson.types.JsonNull;
+import com.crimson.types.JsonNumber;
+import com.crimson.types.JsonObject;
+import com.crimson.types.JsonString;
+import com.crimson.types.JsonType;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
@@ -13,6 +16,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import org.apache.commons.lang3.StringUtils;
 
 public class DataFrameBuilder {
 
@@ -58,8 +62,8 @@ public class DataFrameBuilder {
     try (FileInputStream fileInputStream = new FileInputStream(new File(fileName))) {
       FileChannel fileChannel = fileInputStream.getChannel();
       fileChannel.read(buffer);
-    } catch (FileNotFoundException e) {
     } catch (IOException e) {
+      throw new IllegalStateException(e);
     }
 
     try {
@@ -72,6 +76,7 @@ public class DataFrameBuilder {
       List<Cell> cells = inferSchema(EMPTY, jsonObject, DataFrame::new);
       dataFrame.addHeader(cells);
     } catch (Exception e) {
+      throw new IllegalStateException(e);
     }
 
     return dataFrame;
@@ -90,13 +95,11 @@ public class DataFrameBuilder {
     } else {
       JsonObject jsonObject = (JsonObject) jsonType;
       jsonObject
-          .entrySet()
-          .forEach(
-              e -> {
-                String pre = StringUtils.isEmpty(prefix) ? e.getKey() : prefix + "." + e.getKey();
-                List<Cell> res = inferSchema(pre, (JsonType<?>) e.getValue(), supplier);
-                result.addAll(res);
-              });
+          .forEach((key, value) -> {
+            String pre = StringUtils.isEmpty(prefix) ? key : prefix + "." + key;
+            List<Cell> res = inferSchema(pre, (JsonType<?>) value, supplier);
+            result.addAll(res);
+          });
     }
 
     return result;
