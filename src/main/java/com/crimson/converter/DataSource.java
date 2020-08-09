@@ -1,19 +1,24 @@
 package com.crimson.converter;
 
+import com.crimson.types.JsonObject;
 import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
-class DataSource implements Closeable, IMailboxProcessor<Message> {
+class DataSource<E extends JsonObject> implements Closeable, IMailboxProcessor<Message> {
 
   /**
    * Data directory details
@@ -66,7 +71,9 @@ class DataSource implements Closeable, IMailboxProcessor<Message> {
     }
   }
 
-  public void start(Consumer<String[]> consumer) {
+  public void start(Consumer<E[]> consumer) {
+    Objects.requireNonNull(consumer);
+
     if (!started && !err) {
       service.submit(() -> process(consumer));
       started = true;
@@ -80,19 +87,14 @@ class DataSource implements Closeable, IMailboxProcessor<Message> {
     }
   }
 
-  private void process(Consumer<String[]> consumer) {
+  private void process(Consumer<E[]> consumer) {
     while (!stopped) {
       try {
         int count = reader.read(buffer, offset, CHUNK_SIZE);
         if (count <= 0) {
           break;
         } else if (count <= CHUNK_SIZE) {
-          Optional<String[]> opt = chomp();
-          if (opt.isPresent()) {
-            service.submit(() -> consumer.accept(opt.get()), service);
-          } else {
-            break;
-          }
+          service.submit(() -> stream(consumer));
           receive(messages.poll());
         }
       } catch (IOException e) {
@@ -111,7 +113,20 @@ class DataSource implements Closeable, IMailboxProcessor<Message> {
   public void receive(Message message) {
     if (null == message || null == message.id) {
       stopped = true;
-      service.shutdown();
+    }
+  }
+
+  private void stream(Consumer<E[]> consumer) {
+    Optional<String[]> opt = chomp();
+    if (opt.isPresent()) {
+      List<JsonObject> jsonObjects = Arrays.stream(opt.get()).map(e -> {
+        JsonObject jsonObject = JsonObject.newInstance();
+        jsonObject.cast(e);
+        return jsonObject;
+      }).filter(e -> null != e.valueOf()).collect(Collectors.toList());
+      consumer.accept((E[]) jsonObjects.toArray());
+    } else {
+      throw new IllegalStateException();
     }
   }
 
@@ -127,4 +142,5 @@ class DataSource implements Closeable, IMailboxProcessor<Message> {
   public void close() throws IOException {
     reader.close();
   }
+
 }
