@@ -2,7 +2,6 @@ package com.crimson.converter;
 
 import com.crimson.types.JsonObject;
 import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -11,14 +10,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-class DataSource<E extends JsonObject> implements Closeable, IMailboxProcessor<Message> {
+class DataSource<E extends JsonObject> {
 
   /**
    * Data directory details
@@ -36,6 +33,8 @@ class DataSource<E extends JsonObject> implements Closeable, IMailboxProcessor<M
   static final int CHUNK_SIZE = 33_554_432;
   static final char[] buffer = new char[CHUNK_SIZE];
 
+  static final String NEWLINE = System.lineSeparator();
+
   /**
    * State of JsonToCsvConverter
    */
@@ -48,11 +47,6 @@ class DataSource<E extends JsonObject> implements Closeable, IMailboxProcessor<M
    * Internal buffered reader
    */
   final Reader reader;
-
-  /**
-   * Blocking queue where message arrives in FIFO order requesting DataSource to read from underlying stream
-   */
-  final Queue<Message> messages = new ArrayBlockingQueue<Message>(16);
 
   /**
    * Thread pool per DataSource
@@ -75,14 +69,14 @@ class DataSource<E extends JsonObject> implements Closeable, IMailboxProcessor<M
     Objects.requireNonNull(consumer);
 
     if (!started && !err) {
-      service.submit(() -> process(consumer));
       started = true;
+      process(consumer);
     } else if (err) {
       throw new IllegalStateException("DataSource state is in error. Can't re-initialize now");
     } else if (started) {
       if (stopped) {
         stopped = false;
-        service.submit(() -> process(consumer));
+        process(consumer);
       }
     }
   }
@@ -91,56 +85,47 @@ class DataSource<E extends JsonObject> implements Closeable, IMailboxProcessor<M
     while (!stopped) {
       try {
         int count = reader.read(buffer, offset, CHUNK_SIZE);
+
         if (count <= 0) {
+          stopped = true;
           break;
         } else if (count <= CHUNK_SIZE) {
-          service.submit(() -> stream(consumer));
-          receive(messages.poll());
+          Optional<String[]> opt = chomp();
+
+          if (opt.isPresent()) {
+            List<JsonObject> jsonObjects = Arrays.stream(opt.get()).map(e -> {
+              JsonObject jsonObject = JsonObject.newInstance();
+              jsonObject.cast(e);
+              return jsonObject;
+            }).filter(e -> null != e.valueOf()).collect(Collectors.toList());
+
+            /* Stream to consumer */
+            consumer.accept((E[]) jsonObjects.toArray());
+          } else {
+            stopped = true;
+          }
         }
       } catch (IOException e) {
         err = true;
+        close();
         throw new IllegalStateException(e);
       }
     }
   }
 
-  @Override
-  public void send(Message message) {
-    messages.add(message);
-  }
-
-  @Override
-  public void receive(Message message) {
-    if (null == message || null == message.id) {
-      stopped = true;
-    }
-  }
-
-  private void stream(Consumer<E[]> consumer) {
-    Optional<String[]> opt = chomp();
-    if (opt.isPresent()) {
-      List<JsonObject> jsonObjects = Arrays.stream(opt.get()).map(e -> {
-        JsonObject jsonObject = JsonObject.newInstance();
-        jsonObject.cast(e);
-        return jsonObject;
-      }).filter(e -> null != e.valueOf()).collect(Collectors.toList());
-      consumer.accept((E[]) jsonObjects.toArray());
-    } else {
-      throw new IllegalStateException();
-    }
-  }
-
   private Optional<String[]> chomp() {
     String s = new String(buffer);
-    int end = s.lastIndexOf("\n");
+    int end = s.lastIndexOf(NEWLINE);
     if (end < 0) { throw new IllegalStateException("Unable to find line terminator char in chars read"); }
     offset += (end + 1);
-    return Optional.of(s.substring(0, end + 1).split("\n"));
+    for (int i = 0; i < buffer.length; i++) { buffer[i] = ' '; }
+    return Optional.of(s.substring(0, end + 1).split(NEWLINE));
   }
 
-  @Override
-  public void close() throws IOException {
-    reader.close();
+  public void close() {
+    try {
+      reader.close();
+    } catch (IOException e) {
+    }
   }
-
 }

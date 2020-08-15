@@ -1,8 +1,8 @@
 package com.crimson.converter;
 
-interface IMailboxProcessor<M> {
+interface IMailboxProcessor<E> {
 
-  void send(M message);
+  void send(E message);
 
-  void receive(M message);
+  void receive(E message);
 }
