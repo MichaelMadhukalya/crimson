@@ -1,27 +1,32 @@
 package com.crimson.types;
 
+import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.concurrent.*;
-import java.util.stream.Collectors;
-
 public class JParserTest {
+
   String input_1 =
       "{\"key1\": \"value1\", \"key2\": \"value2\", \"key3\": [1, 2, 3], \"key4\": "
           + "{ \"key5\": \"value5\", \"key6\": \"value6\"}, \"key7\": [1, [2, [3, 4, 5]], {\"key8\": "
           + "{\"key9\": [0.0096, 8.0E+02, {\"key10\": \"value10\", \"key11\": [1001.01, 2.1E-03, [[1.6E+02,0.2,3.14159], 4.3E+03]]}]}}]}";
 
   String[] inputs =
-      new String[] {
-        "{\"key12\": \"value\"}",
-        "{\"key13\": null}",
-        "{\"key14\": 3.234}",
-        "{\"key15\": false}",
-        "{\"key16\": [1, 2.0, 3.14159]}"
+      new String[]{
+          "{\"key12\": \"value\"}",
+          "{\"key13\": null}",
+          "{\"key14\": 3.234}",
+          "{\"key15\": false}",
+          "{\"key16\": [1, 2.0, 3.14159]}"
       };
 
   @Before

@@ -1,36 +1,30 @@
 package com.crimson.converter;
 
 import com.crimson.converter.DataFrame.DataFrameBuilder;
-import com.crimson.types.JsonObject;
 import java.util.Arrays;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class SourceToSink implements IStreamObserver<JsonObject> {
+public class SourceToSink implements IStreamObserver<Object> {
 
   /**
-   * Queue for JsonObjects
+   * Single threaded pool
    */
-  Queue<JsonObject> queue;
-
+  final ExecutorService pool = Executors.newSingleThreadExecutor();
+  Queue<Object> queue;
   /**
    * Source and sink files
    */
   String sourceFile;
   String sinkFile;
 
-  /**
-   * Single threaded pool
-   */
-  final ExecutorService pool = Executors.newSingleThreadExecutor();
-
   public SourceToSink() {
   }
 
   @Override
-  public void stream(JsonObject[] records) {
+  public void stream(Object[] records) {
     Arrays.stream(records).forEach(e -> queue.add(e));
   }
 
@@ -49,11 +43,12 @@ public class SourceToSink implements IStreamObserver<JsonObject> {
     queue = new LinkedBlockingQueue<>();
     pool.submit(() -> doTask(DataFrameBuilder.newInstance()));
 
-    /* Initialize DataSource */
     try {
-      DataSource<JsonObject> dataSource = new DataSource<JsonObject>(sourceFile);
+      /* Initialize DataSource */
+      DataSource<Object> dataSource = new DataSource<>(sourceFile);
       dataSource.start(this::stream);
     } catch (Exception e) {
+      throw new IllegalStateException(e);
     }
   }
 

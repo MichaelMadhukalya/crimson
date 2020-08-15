@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 public class JsonNumber extends JsonType<JsonNumber> implements javax.json.JsonNumber {
+
   BigDecimal number;
 
   private JsonNumber() {}

@@ -1,13 +1,20 @@
 package com.crimson.types;
 
 import com.crimson.types.JsonType.UnCastableObjectToInstanceTypeException;
-import org.junit.*;
-
-import javax.json.JsonValue;
-import javax.json.JsonValue.ValueType;
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Set;
+import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class JsonObjectTest {
 
@@ -125,7 +132,7 @@ public class JsonObjectTest {
 
     JsonType<?> valueType = (JsonType) jsonObject.get("key2");
     Assert.assertTrue(valueType.valueOf() instanceof JsonNull);
-    Assert.assertTrue((((JsonNull) valueType.valueOf()).toString().equals("null")));
+    Assert.assertTrue((valueType.valueOf().toString().equals("null")));
 
     JsonNull jsonNull = JsonNull.newInstance();
     jsonNull.cast(valueType);
@@ -675,16 +682,16 @@ public class JsonObjectTest {
     jsonObject19.cast(INPUT_19);
 
     JsonType[] jsonObjects =
-        new JsonType[] {
-          jsonObject1,
-          jsonObject2,
-          jsonObject3,
-          jsonObject4,
-          jsonObject5,
-          jsonObject6,
-          jsonObject7,
-          jsonObject8,
-          jsonObject19
+        new JsonType[]{
+            jsonObject1,
+            jsonObject2,
+            jsonObject3,
+            jsonObject4,
+            jsonObject5,
+            jsonObject6,
+            jsonObject7,
+            jsonObject8,
+            jsonObject19
         };
 
     /* Write Json to file */

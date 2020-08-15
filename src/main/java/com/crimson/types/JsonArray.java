@@ -1,18 +1,22 @@
 package com.crimson.types;
 
-import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.stream.Collectors;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.stream.JsonParser.Event;
-import java.util.*;
-import java.util.stream.Collectors;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArray {
+
   JParser parser;
   List<? super JsonValue> list = new ArrayList<>();
 
@@ -59,7 +63,7 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
                 e -> {
                   T val = null;
                   JsonType<?> jsonType = (JsonType<?>) e;
-                  val = (T) jsonType.cast(((JsonType<?>) e).toString());
+                  val = (T) jsonType.cast(e.toString());
                   return val;
                 })
             .collect(Collectors.toList());
@@ -108,11 +112,7 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
   @Override
   public boolean isNull(int i) {
     JsonType<?> valueType = (JsonType<?>) list.get(i);
-    if (null != valueType && valueType.toString().equals("null")) {
-      return true;
-    }
-
-    return false;
+    return null != valueType && valueType.toString().equals("null");
   }
 
   @Override
@@ -127,7 +127,7 @@ public class JsonArray extends JsonType<JsonArray> implements javax.json.JsonArr
 
   @Override
   public boolean contains(Object o) {
-    return list.stream().filter(e -> e.equals(o)).count() >= 1 ? true : false;
+    return list.stream().filter(e -> e.equals(o)).count() >= 1;
   }
 
   @Override

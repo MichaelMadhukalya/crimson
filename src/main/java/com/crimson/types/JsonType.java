@@ -3,6 +3,7 @@ package com.crimson.types;
 import javax.json.JsonValue;
 
 public abstract class JsonType<T extends JsonType> implements JsonValue, Cloneable {
+
   T value;
 
   JsonType() {}
@@ -18,6 +19,7 @@ public abstract class JsonType<T extends JsonType> implements JsonValue, Cloneab
   }
 
   public static class UnCastableObjectToInstanceTypeException extends RuntimeException {
+
     public UnCastableObjectToInstanceTypeException(String message) {
       super(message);
     }

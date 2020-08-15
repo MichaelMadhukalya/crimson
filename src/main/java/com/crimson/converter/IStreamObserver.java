@@ -1,9 +1,7 @@
 package com.crimson.converter;
 
-import com.crimson.types.JsonObject;
-
 @FunctionalInterface
-public interface IStreamObserver<E extends JsonObject> {
+public interface IStreamObserver<E> {
 
   void stream(E[] records);
 }

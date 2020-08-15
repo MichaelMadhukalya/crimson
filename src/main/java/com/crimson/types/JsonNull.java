@@ -3,6 +3,7 @@ package com.crimson.types;
 import javax.json.JsonValue;
 
 public class JsonNull extends JsonType<JsonNull> implements JsonValue {
+
   static final JsonValue NULL_VALUE = JsonValue.NULL;
 
   private JsonNull() {}

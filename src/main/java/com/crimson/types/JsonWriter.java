@@ -8,7 +8,10 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public class JsonWriter implements IJsonWriter<JsonType> {
-  /** Object separator */
+
+  /**
+   * Object separator
+   */
   static final String LINE_SEPARATOR = String.valueOf('\n');
 
   @Override

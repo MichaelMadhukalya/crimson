@@ -1,17 +1,17 @@
 package com.crimson.types;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import javax.json.JsonArray;
+import javax.json.JsonNumber;
+import javax.json.JsonValue.ValueType;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.json.JsonArray;
-import javax.json.JsonNumber;
-import javax.json.JsonValue.ValueType;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-
 public class JsonNumberTest {
+
   String input =
       "{\"key\": [1, 2.3, 3E4, 3.1E+4, 3.1289E04, 277162424654518927, 2.341E3, 18726262626352726E-09]}";
 

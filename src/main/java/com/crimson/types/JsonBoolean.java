@@ -3,6 +3,7 @@ package com.crimson.types;
 import javax.json.JsonValue;
 
 public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
+
   static final JsonValue TRUE_VALUE = JsonValue.TRUE;
   static final JsonValue FALSE_VALUE = JsonValue.FALSE;
   Boolean booleanValue;
@@ -43,9 +44,9 @@ public class JsonBoolean extends JsonType<JsonBoolean> implements JsonValue {
 
   public JsonNumber getJsonNumber() {
     if (booleanValue == Boolean.TRUE) {
-      return JsonNumber.newInstance().cast((Object) String.valueOf(1));
+      return JsonNumber.newInstance().cast(String.valueOf(1));
     } else if (booleanValue == Boolean.FALSE) {
-      return JsonNumber.newInstance().cast((Object) String.valueOf(0));
+      return JsonNumber.newInstance().cast(String.valueOf(0));
     }
 
     throw new IllegalStateException(

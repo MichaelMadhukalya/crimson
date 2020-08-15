@@ -1,14 +1,14 @@
 package com.crimson.types;
 
+import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.json.JsonValue;
-import javax.json.JsonValue.ValueType;
-
 public class JsonBooleanTest {
+
   @Before
   public void setUp() throws Exception {}
 

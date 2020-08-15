@@ -1,12 +1,11 @@
 package com.crimson.types;
 
 import com.crimson.types.JsonType.UnCastableObjectToInstanceTypeException;
+import javax.json.JsonValue;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import javax.json.JsonValue;
 
 public class JsonNullTest {
 

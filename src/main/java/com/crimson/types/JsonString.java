@@ -1,6 +1,7 @@
 package com.crimson.types;
 
 public class JsonString extends JsonType<JsonString> implements javax.json.JsonString {
+
   String string;
 
   private JsonString() {}

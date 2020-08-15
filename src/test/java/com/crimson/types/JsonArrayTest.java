@@ -1,12 +1,11 @@
 package com.crimson.types;
 
+import javax.json.JsonArray;
+import javax.json.JsonNumber;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import javax.json.JsonArray;
-import javax.json.JsonNumber;
 
 public class JsonArrayTest {
 

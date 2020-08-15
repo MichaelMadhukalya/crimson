@@ -1,19 +1,20 @@
 package com.crimson.types;
 
-import javax.json.JsonValue;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import javax.json.JsonValue;
 
 public class JsonMapper {
+
   public Map<Object, Object> toMap(JsonObject object) {
     return object.entrySet().stream()
         .collect(Collectors.toMap(e -> e.getKey(), e -> transform(e.getValue())));
   }
 
   public List<Object> toList(JsonArray array) {
-    return array.stream().map(e -> transform((JsonType) e)).collect(Collectors.toList());
+    return array.stream().map(e -> transform(e)).collect(Collectors.toList());
   }
 
   public List<Object> toList(String input) {

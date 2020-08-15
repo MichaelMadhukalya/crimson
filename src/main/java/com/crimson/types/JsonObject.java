@@ -2,20 +2,24 @@ package com.crimson.types;
 
 import com.crimson.annotations.ValueType;
 import com.google.common.collect.ImmutableSet;
-import org.apache.commons.collections.MapUtils;
-import org.apache.commons.lang.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.json.JsonArray;
 import javax.json.JsonNumber;
 import javax.json.JsonString;
 import javax.json.JsonValue;
 import javax.json.stream.JsonParser.Event;
-import java.util.*;
-import java.util.stream.Collectors;
+import org.apache.commons.collections.MapUtils;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 @ValueType
 public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonObject {
+
   JParser parser;
   Map<? super String, ? super JsonValue> map = new LinkedHashMap<>();
 
@@ -96,11 +100,7 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
   @Override
   public boolean isNull(String s) {
     JsonType<?> valueType = (JsonType<?>) map.get(s);
-    if (null != valueType && valueType.toString().equals("null")) {
-      return true;
-    }
-
-    return false;
+    return null != valueType && valueType.toString().equals("null");
   }
 
   @Override
@@ -164,7 +164,7 @@ public class JsonObject extends JsonType<JsonObject> implements javax.json.JsonO
 
   @Override
   public Collection<JsonValue> values() {
-    return Collections.<JsonValue>unmodifiableCollection(
+    return Collections.unmodifiableCollection(
         map.values().stream().map(e -> (JsonValue) e).collect(Collectors.toList()));
   }
 

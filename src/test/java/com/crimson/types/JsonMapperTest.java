@@ -1,14 +1,14 @@
 package com.crimson.types;
 
+import java.util.List;
+import java.util.Map;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
-import java.util.Map;
-
 public class JsonMapperTest {
+
   String input =
       "{  \"key1\": \"value1\","
           + "\"key2\": null,"
@@ -82,6 +82,6 @@ public class JsonMapperTest {
     JsonArray jsonArray = JsonArray.newInstance();
     jsonArray.cast(arr);
     String res = mapper.toString(jsonArray);
-    Assert.assertTrue(null != res && res.toString().contains("30000.0"));
+    Assert.assertTrue(null != res && res.contains("30000.0"));
   }
 }

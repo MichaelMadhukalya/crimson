@@ -28,27 +28,24 @@ import java.util.function.Supplier;
 public class DataFrame {
 
   /**
-   * Containers for DataFrame
-   */
-  final Map<String, List<Cell>> frame = new LinkedHashMap<>();
-  final Set<String> keys = new HashSet<>();
-
-  /**
    * Max cols and rows for DataFrame
    */
   static final int MAX_NUMBER_COLS = 65_536;
   static final int MAX_NUMBER_ROWS = 1_000_000;
-
-  /**
-   * DataFrame counters
-   */
-  int rowCounter = 0, colCounter = 0;
-
   /**
    * Separators
    */
   static final String COLUMN_SEPARATOR = ",";
   static final String ROW_SEPARATOR = System.lineSeparator();
+  /**
+   * Containers for DataFrame
+   */
+  final Map<String, List<Cell>> frame = new LinkedHashMap<>();
+  final Set<String> keys = new HashSet<>();
+  /**
+   * DataFrame counters
+   */
+  int rowCounter = 0, colCounter = 0;
 
   private DataFrame() {
   }
@@ -73,9 +70,22 @@ public class DataFrame {
     });
   }
 
+  public void addRow(Object object) {
+    Objects.requireNonNull(object);
+    JsonObject jsonObject = JsonObject.newInstance().cast(object);
+    List<Cell> cells = DataFrameBuilder.inferSchema(EMPTY, jsonObject, null);
+    addRow(cells);
+  }
+
+  public void addRow(String input) {
+    Objects.requireNonNull(input);
+    JsonObject jsonObject = JsonObject.newInstance().cast(input);
+    List<Cell> cells = DataFrameBuilder.inferSchema(EMPTY, jsonObject, null);
+    addRow(cells);
+  }
+
   public void addRow(JsonType<?> jsonType) {
     Objects.requireNonNull(jsonType);
-
     if (!(jsonType instanceof JsonObject)) {
       throw new IllegalArgumentException("JsonType object not an instance of JsonObject type");
     }
@@ -86,8 +96,6 @@ public class DataFrame {
   }
 
   private void addRow(List<Cell> row) {
-    Objects.requireNonNull(row);
-
     row.stream().forEach(e -> {
       if (rowCounter > MAX_NUMBER_ROWS) {
         throw new IllegalStateException(String.format("DataFrame exceeded max. row size : %d", rowCounter));

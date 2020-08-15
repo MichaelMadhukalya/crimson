@@ -1,17 +1,20 @@
 package com.crimson.types;
 
-import javax.json.Json;
-import javax.json.stream.JsonLocation;
-import javax.json.stream.JsonParser;
 import java.io.Closeable;
 import java.io.StringReader;
 import java.math.BigDecimal;
 import java.util.Stack;
+import javax.json.Json;
+import javax.json.stream.JsonLocation;
+import javax.json.stream.JsonParser;
 
 class JParser implements JsonParser, Closeable {
+
   private final Stack<Event> events = new Stack<>();
 
-  /** State of the parser */
+  /**
+   * State of the parser
+   */
   private final JsonParser jsonParser;
 
   private final String input;
@@ -88,10 +91,9 @@ class JParser implements JsonParser, Closeable {
   }
 
   /**
-   * Validate a given input string to verify if it is in valid JSON format. The validation is done
-   * based on checking of syntax to ensure that out of order parenthesis and un-balanced parenthesis
-   * are caught properly. However, semantic verification is only done at the time of parsing e.g.
-   * ensuring that every key type is represented as a string.
+   * Validate a given input string to verify if it is in valid JSON format. The validation is done based on checking of
+   * syntax to ensure that out of order parenthesis and un-balanced parenthesis are caught properly. However, semantic
+   * verification is only done at the time of parsing e.g. ensuring that every key type is represented as a string.
    *
    * @param input Input
    * @return True if JSON string is valid, false otherwise
