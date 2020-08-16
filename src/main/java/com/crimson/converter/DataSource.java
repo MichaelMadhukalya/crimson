@@ -40,7 +40,7 @@ class DataSource<E> {
   /**
    * Thread pool per DataSource
    */
-  final ExecutorService service = Executors.newFixedThreadPool(1);
+  final ExecutorService pool = Executors.newSingleThreadExecutor();
   /**
    * State of JsonToCsvConverter
    */
@@ -87,7 +87,7 @@ class DataSource<E> {
         } else if (count <= CHUNK_SIZE) {
           Optional<String[]> opt = chomp();
           if (opt.isPresent()) {
-            service.submit(() -> {
+            pool.submit(() -> {
               List<E> objects = Arrays.stream(opt.get()).map(e -> (E) e).collect(Collectors.toList());
               consumer.accept((E[]) objects.toArray());
             });
