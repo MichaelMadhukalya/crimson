@@ -30,18 +30,18 @@ public class DataFrame {
   /**
    * Max cols and rows for DataFrame
    */
-  static final int MAX_NUMBER_COLS = 65_536;
-  static final int MAX_NUMBER_ROWS = 1_000_000;
+  private static final int MAX_NUMBER_COLS = 65_536;
+  private static final int MAX_NUMBER_ROWS = 1_000_000;
   /**
    * Separators
    */
-  static final String COLUMN_SEPARATOR = ",";
-  static final String ROW_SEPARATOR = System.lineSeparator();
+  private static final String COLUMN_SEPARATOR = ",";
+  private static final String ROW_SEPARATOR = System.lineSeparator();
   /**
    * Containers for DataFrame
    */
-  final Map<String, List<Cell>> frame = new LinkedHashMap<>();
-  final Set<String> keys = new HashSet<>();
+  private final Map<String, List<Cell>> frame = new LinkedHashMap<>();
+  private final Set<String> keys = new HashSet<>();
   /**
    * DataFrame counters
    */
@@ -152,26 +152,26 @@ public class DataFrame {
     /**
      * Samples directory details
      */
-    static final String SAMPLE_DIRECTORY = "/tmp/data";
+    private static final String SAMPLE_DIRECTORY = "/tmp/data";
 
     /**
      * Sample file
      */
-    static final String SAMPLE_FILE_NAME = "sample-json.json";
+    private static final String SAMPLE_FILE_NAME = "sample-json.json";
 
     /**
      * Max chunk size to be read from samples file
      */
-    static final int CHUNK_SIZE = 1_048_576;
+    private static final int CHUNK_SIZE = 1_048_576;
     /**
      * Buffer for content read from file
      */
-    static final ByteBuffer buffer = ByteBuffer.allocate(CHUNK_SIZE);
+    private static final ByteBuffer buffer = ByteBuffer.allocate(CHUNK_SIZE);
 
     /**
      * DataFrame. This is built during static initialization
      */
-    static DataFrame dataFrame = null;
+    private static DataFrame dataFrame = null;
 
     static {
       newInstance();

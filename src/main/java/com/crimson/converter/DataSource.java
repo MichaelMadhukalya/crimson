@@ -1,5 +1,7 @@
 package com.crimson.converter;
 
+import static com.crimson.converter.SourceToSink.sharedPool;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -9,8 +11,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -19,35 +19,32 @@ class DataSource<E> {
   /**
    * Data directory details
    */
-  static final String DATA_DIRECTORY = "/tmp/data";
+  private static final String DATA_DIRECTORY = "/tmp/data";
 
   /**
    * Data file
    */
-  static final String DATA_FILE_NAME = "data-json.json";
+  private static final String DATA_FILE_NAME = "data-json.json";
 
   /**
    * Chunk size (~32 MB)
    */
-  static final int CHUNK_SIZE = 33_554_432;
-  static final char[] buffer = new char[CHUNK_SIZE];
+  private static final int CHUNK_SIZE = 33_554_432;
+  private static final char[] buffer = new char[CHUNK_SIZE];
 
-  static final String NEWLINE = System.lineSeparator();
+  private static final String NEWLINE = System.lineSeparator();
   /**
    * Internal buffered reader
    */
-  final Reader reader;
-  /**
-   * Thread pool per DataSource
-   */
-  final ExecutorService pool = Executors.newSingleThreadExecutor();
+  private final Reader reader;
+
   /**
    * State of JsonToCsvConverter
    */
-  int offset = 0;
-  boolean started = false;
-  boolean stopped = false;
-  boolean err = false;
+  private int offset = 0;
+  private boolean started = false;
+  private boolean stopped = false;
+  private boolean err = false;
 
   DataSource() {
     this(DATA_DIRECTORY + "/" + DATA_FILE_NAME);
@@ -87,7 +84,7 @@ class DataSource<E> {
         } else if (count <= CHUNK_SIZE) {
           Optional<String[]> opt = chomp();
           if (opt.isPresent()) {
-            pool.submit(() -> {
+            sharedPool.submit(() -> {
               List<E> objects = Arrays.stream(opt.get()).map(e -> (E) e).collect(Collectors.toList());
               consumer.accept((E[]) objects.toArray());
             });

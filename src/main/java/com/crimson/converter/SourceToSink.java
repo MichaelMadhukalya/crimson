@@ -4,6 +4,7 @@ import com.crimson.converter.DataFrame.DataFrameBuilder;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Queue;
@@ -14,25 +15,34 @@ import java.util.concurrent.LinkedBlockingQueue;
 public class SourceToSink implements IStreamObserver<Object> {
 
   /**
-   * Single threaded pool
+   * Queue of records parsed from source
    */
-  final ExecutorService pool = Executors.newSingleThreadExecutor();
-  Queue<Object> queue;
+  private Queue<Object> queue;
   /**
    * Source and sink files
    */
-  String sourceFile;
-  String sinkFile;
+  private String sourceFile;
+  private String sinkFile;
 
   /**
    * Max row limit for in memory persistence
    */
-  int maximumRowLimit = 1_000;
+  private int maximumRowLimit = 1_000_000;
+
+  /**
+   * Maximum in memory size of DataFrame before it is flushed to persistence store
+   */
+  private int maximumMemoryMB = 100;
 
   /**
    * Default encoding scheme
    */
-  static final String DEFAULT_ENCODING_SCHEME = "utf-8";
+  private static final String DEFAULT_ENCODING_SCHEME = "utf-8";
+
+  /**
+   * Shared pool.
+   */
+  static final ExecutorService sharedPool = Executors.newFixedThreadPool(2);
 
   public SourceToSink() {
   }
@@ -55,7 +65,7 @@ public class SourceToSink implements IStreamObserver<Object> {
   public SourceToSink create() {
     /* Initialize and poll queue for data */
     queue = new LinkedBlockingQueue<>();
-    pool.submit(() -> doTask(DataFrameBuilder.newInstance()));
+    sharedPool.submit(() -> doTask(DataFrameBuilder.newInstance()));
 
     try {
       /* Initialize DataSource */
@@ -75,7 +85,7 @@ public class SourceToSink implements IStreamObserver<Object> {
 
         /* If over row limit then flush to output stream before writing new rows */
         if (dataFrame.rowCounter >= maximumRowLimit) {
-          BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(new File(sinkFile)));
+          OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(new File(sinkFile), true));
 
           String output = dataFrame.toString();
 
@@ -100,6 +110,14 @@ public class SourceToSink implements IStreamObserver<Object> {
 
   public SourceToSink setMaximumRowLimit(int maxRowLimit) {
     maximumRowLimit = maxRowLimit;
+    return this;
+  }
+
+  public SourceToSink setMaximumMB(int memoryMB) {
+    if (memoryMB != 1 || memoryMB != 5 || memoryMB != 25 || memoryMB != 100) {
+      throw new IllegalArgumentException("Maximum in memory size of DataFrame in MB can be either 1, 5, 25 or 100");
+    }
+    maximumMemoryMB = memoryMB;
     return this;
   }
 }
