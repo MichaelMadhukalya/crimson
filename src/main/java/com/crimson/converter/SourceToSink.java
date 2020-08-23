@@ -3,6 +3,7 @@ package com.crimson.converter;
 import com.crimson.converter.DataFrame.DataFrameBuilder;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
@@ -44,6 +45,11 @@ public class SourceToSink implements IStreamObserver<Object> {
    */
   static final ExecutorService sharedPool = Executors.newFixedThreadPool(2);
 
+  /**
+   * Output stream for writing to the sink file
+   */
+  OutputStream outputStream = null;
+
   public SourceToSink() {
   }
 
@@ -58,14 +64,20 @@ public class SourceToSink implements IStreamObserver<Object> {
   }
 
   public SourceToSink writeToSink(String sink) {
-    sinkFile = sink;
+    try {
+      sinkFile = sink;
+      outputStream = new BufferedOutputStream(new FileOutputStream(new File(sinkFile), true));
+    } catch (FileNotFoundException e) {
+      throw new IllegalStateException(e);
+    }
     return this;
   }
 
   public SourceToSink create() {
     /* Initialize and poll queue for data */
     queue = new LinkedBlockingQueue<>();
-    sharedPool.submit(() -> doTask(DataFrameBuilder.newInstance()));
+    DataFrame frame = DataFrameBuilder.newInstance();
+    sharedPool.submit(() -> doTask(frame));
 
     try {
       /* Initialize DataSource */
@@ -78,32 +90,31 @@ public class SourceToSink implements IStreamObserver<Object> {
     return this;
   }
 
-  private void doTask(DataFrame dataFrame) {
-    while (true) {
-      try {
-        Object object = queue.poll();
+  private void doTask(DataFrame frame) {
+    try {
+      Object object = queue.poll();
 
-        /* If over row limit then flush to output stream before writing new rows */
-        if (dataFrame.rowCounter >= maximumRowLimit) {
-          OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(new File(sinkFile), true));
+      /* If over row limit then flush to output stream before writing new rows */
+      if (frame.getRowCount() >= maximumRowLimit) {
 
-          String output = dataFrame.toString();
+        String output = frame.toString();
 
-          if (null != output && output.length() > 0) {
-            byte[] bytes = output.getBytes(Charset.forName(DEFAULT_ENCODING_SCHEME));
-            if (null != bytes && bytes.length > 0) {
-              outputStream.write(bytes);
-              outputStream.flush();
-              dataFrame.clear();
-            }
+        if (null != output && output.length() > 0) {
+          byte[] bytes = output.getBytes(Charset.forName(DEFAULT_ENCODING_SCHEME));
+          if (null != bytes && bytes.length > 0) {
+            outputStream.write(bytes);
+            outputStream.flush();
+            frame.clear();
           }
         }
-
-        dataFrame.addRow(object);
-      } catch (Exception e) {
-        throw new IllegalStateException(String.format("This task should not throw an exception. Task failed: {%s}", e));
       }
+
+      frame.addRow(object);
+    } catch (Exception e) {
+      throw new IllegalStateException(String.format("This task should not throw an exception. Task failed: {%s}", e));
     }
+
+    doTask(frame);
   }
 
   public int getMaxRowLimit() { return maximumRowLimit; }
@@ -114,7 +125,7 @@ public class SourceToSink implements IStreamObserver<Object> {
   }
 
   public SourceToSink setMaximumMB(int memoryMB) {
-    if (memoryMB != 1 || memoryMB != 5 || memoryMB != 25 || memoryMB != 100) {
+    if (memoryMB != 1 && memoryMB != 5 && memoryMB != 25 && memoryMB != 100) {
       throw new IllegalArgumentException("Maximum in memory size of DataFrame in MB can be either 1, 5, 25 or 100");
     }
     maximumMemoryMB = memoryMB;

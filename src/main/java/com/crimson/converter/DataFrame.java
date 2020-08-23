@@ -45,7 +45,7 @@ public class DataFrame {
   /**
    * DataFrame counters
    */
-  int rowCounter = 0, colCounter = 0;
+  private int rowCount = 0, colCount = 0;
 
   private DataFrame() {
   }
@@ -63,9 +63,9 @@ public class DataFrame {
     header.stream().forEach(e -> {
       frame.put(e.name, new ArrayList<>());
       keys.add(e.name);
-      ++colCounter;
-      if (colCounter >= MAX_NUMBER_COLS) {
-        throw new IllegalStateException(String.format("DataFrame exceeded max. column size : %d", colCounter));
+      ++colCount;
+      if (colCount >= MAX_NUMBER_COLS) {
+        throw new IllegalStateException(String.format("DataFrame exceeded max. column size : %d", colCount));
       }
     });
   }
@@ -97,16 +97,16 @@ public class DataFrame {
 
   private void addRow(List<Cell> row) {
     row.stream().forEach(e -> {
-      if (rowCounter > MAX_NUMBER_ROWS) {
-        throw new IllegalStateException(String.format("DataFrame exceeded max. row size : %d", rowCounter));
+      if (rowCount > MAX_NUMBER_ROWS) {
+        throw new IllegalStateException(String.format("DataFrame exceeded max. row size : %d", rowCount));
       }
       List<Cell> lst = frame.get(e.name);
       lst.add(e);
     });
-    ++rowCounter;
+    ++rowCount;
 
     frame.values().stream().forEach(e -> {
-      if (e.size() < rowCounter) {
+      if (e.size() < rowCount) {
         JsonType<?> jsonType = JsonNull.newInstance();
         Object value = jsonType.toString();
         e.add(new Cell(EMPTY, jsonType, value));
@@ -122,6 +122,10 @@ public class DataFrame {
     return frame.size() == keys.size() && keys.size() > 0;
   }
 
+  public int getRowCount() { return rowCount; }
+
+  public int getColCount() { return colCount; }
+
   @Override
   public String toString() {
     StringBuffer buffer = new StringBuffer();
@@ -131,7 +135,7 @@ public class DataFrame {
     buffer.append(ROW_SEPARATOR);
 
     /* Add rows */
-    for (int i = 0; i < rowCounter; i++) {
+    for (int i = 0; i < rowCount; i++) {
       final int idx = i;
       frame.values().stream().forEach(e -> {
         Cell cell = e.get(idx);
