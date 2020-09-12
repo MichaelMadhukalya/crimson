@@ -13,6 +13,7 @@ import com.crimson.types.JsonType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
@@ -100,8 +101,8 @@ public class DataFrame {
       if (rowCount > MAX_NUMBER_ROWS) {
         throw new IllegalStateException(String.format("DataFrame exceeded max. row size : %d", rowCount));
       }
-      List<Cell> lst = frame.get(e.name);
-      lst.add(e);
+      List<Cell> list = frame.get(e.name);
+      list.add(e);
     });
     ++rowCount;
 
@@ -235,6 +236,15 @@ public class DataFrame {
       }
 
       return result;
+    }
+  }
+
+  static class DataFrameWriter {
+
+    private DataFrameWriter() {
+    }
+
+    private void write(OutputStream outputStream) {
     }
   }
 }

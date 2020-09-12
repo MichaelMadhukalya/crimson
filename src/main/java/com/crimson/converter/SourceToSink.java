@@ -5,6 +5,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Arrays;
@@ -50,6 +51,11 @@ public class SourceToSink implements IStreamObserver<Object> {
    */
   OutputStream outputStream = null;
 
+  /**
+   * Create file if not exist
+   */
+  private boolean shouldCreateFile = false;
+
   public SourceToSink() {
   }
 
@@ -63,11 +69,29 @@ public class SourceToSink implements IStreamObserver<Object> {
     return this;
   }
 
+  public SourceToSink createFileIfNotExist(boolean shouldCreateFile) {
+    this.shouldCreateFile = shouldCreateFile;
+    return this;
+  }
+
   public SourceToSink writeToSink(String sink) {
     try {
       sinkFile = sink;
-      outputStream = new BufferedOutputStream(new FileOutputStream(new File(sinkFile), true));
+
+      /* If file does not exist then default is to create file */
+      File file = new File(sinkFile);
+      if (!file.exists()) {
+        if (shouldCreateFile) {
+          file.createNewFile();
+        } else {
+          throw new IllegalStateException(String.format("Output file does not exist for transforming data"));
+        }
+      }
+
+      outputStream = new BufferedOutputStream(new FileOutputStream(file, true));
     } catch (FileNotFoundException e) {
+      throw new IllegalStateException(e);
+    } catch (IOException e) {
       throw new IllegalStateException(e);
     }
     return this;
