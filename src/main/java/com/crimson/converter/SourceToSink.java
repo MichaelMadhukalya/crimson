@@ -1,6 +1,7 @@
 package com.crimson.converter;
 
-import com.crimson.converter.DataFrame.DataFrameBuilder;
+import static com.crimson.converter.DataFrame.DataFrameBuilder.newInstance;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,7 +20,7 @@ public class SourceToSink implements IStreamObserver<Object> {
   /**
    * Queue of records parsed from source
    */
-  private Queue<Object> queue;
+  private final Queue<Object> queue = new LinkedBlockingQueue<>();
   /**
    * Source and sink files
    */
@@ -51,11 +52,6 @@ public class SourceToSink implements IStreamObserver<Object> {
    */
   OutputStream outputStream = null;
 
-  /**
-   * Create file if not exist
-   */
-  private boolean shouldCreateFile = false;
-
   public SourceToSink() {
   }
 
@@ -69,12 +65,11 @@ public class SourceToSink implements IStreamObserver<Object> {
     return this;
   }
 
-  public SourceToSink createFileIfNotExist(boolean shouldCreateFile) {
-    this.shouldCreateFile = shouldCreateFile;
-    return this;
+  public SourceToSink writeToSink(String sink) {
+    return writeToSink(sink, false);
   }
 
-  public SourceToSink writeToSink(String sink) {
+  public SourceToSink writeToSink(String sink, boolean shouldCreateFile) {
     try {
       sinkFile = sink;
 
@@ -97,10 +92,9 @@ public class SourceToSink implements IStreamObserver<Object> {
     return this;
   }
 
-  public SourceToSink create() {
-    /* Initialize and poll queue for data */
-    queue = new LinkedBlockingQueue<>();
-    DataFrame frame = DataFrameBuilder.newInstance();
+  public SourceToSink start() {
+    /* Start polling queue */
+    DataFrame frame = newInstance();
     sharedPool.submit(() -> doTask(frame));
 
     try {

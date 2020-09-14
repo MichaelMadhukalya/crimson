@@ -27,16 +27,22 @@ class DataSource<E> {
   private static final String DATA_FILE_NAME = "data-json.json";
 
   /**
-   * Chunk size (~32 MB)
+   * Read buffer size (~32 MB)
    */
-  private static final int CHUNK_SIZE = 33_554_432;
-  private static final char[] buffer = new char[CHUNK_SIZE];
+  private static final int READ_BUFFER_SIZE = 33_554_432;
+  private static final char[] buffer = new char[READ_BUFFER_SIZE];
+
+  /**
+   * Read chunk size
+   */
+  private static final int CHUNK_SIZE = 65_536;
 
   private static final String NEWLINE = System.lineSeparator();
   /**
    * Internal buffered reader
    */
   private final Reader reader;
+  private final FileReader fileReader;
 
   /**
    * State of JsonToCsvConverter
@@ -52,7 +58,8 @@ class DataSource<E> {
 
   DataSource(String fileName) {
     try {
-      reader = new BufferedReader(new FileReader(fileName) {});
+      fileReader = new FileReader(fileName);
+      reader = new BufferedReader(fileReader, READ_BUFFER_SIZE);
     } catch (FileNotFoundException e) {
       throw new IllegalStateException(e);
     }
@@ -77,6 +84,12 @@ class DataSource<E> {
   private void process(Consumer<E[]> consumer) {
     while (!stopped) {
       try {
+        boolean ready = isAvailable();
+        if (!ready) {
+          stopped = true;
+          break;
+        }
+
         int count = reader.read(buffer, offset, CHUNK_SIZE);
         if (count <= 0) {
           stopped = true;
@@ -88,12 +101,25 @@ class DataSource<E> {
               List<E> objects = Arrays.stream(opt.get()).map(e -> (E) e).collect(Collectors.toList());
               consumer.accept((E[]) objects.toArray());
             });
-          } else { stopped = true; }
+          }
         }
       } catch (IOException e) {
         err = true;
         close();
         throw new IllegalStateException(e);
+      }
+    }
+  }
+
+  private boolean isAvailable() {
+    while (true) {
+      try {
+        if (fileReader.ready()) {
+          return true;
+        }
+        Thread.sleep(5_000);
+      } catch (IOException | InterruptedException e) {
+        return false;
       }
     }
   }
